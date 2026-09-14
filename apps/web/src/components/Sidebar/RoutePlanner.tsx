@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { DrivingPolicy, RoadType } from '../../lib/driving';
-import { PRESET_ROUTES, type PresetRoute } from '@road-trip/shared';
 import SearchInput from './SearchInput';
 
 const POLICY_OPTIONS: { value: DrivingPolicy; label: string }[] = [
@@ -34,7 +33,6 @@ interface RoutePlannerProps {
   onRoadTypeChange: (roadType: RoadType) => void;
   onOriginSelect: (name: string, loc: [number, number]) => void;
   onDestSelect: (name: string, loc: [number, number]) => void;
-  onPresetSelect: (route: PresetRoute) => void;
   onHighwayQuery: (ref: string) => void;
   highwayLoading: boolean;
   waypoints?: Waypoint[];
@@ -54,25 +52,16 @@ export default function RoutePlanner({
   onRoadTypeChange,
   onOriginSelect,
   onDestSelect,
-  onPresetSelect,
   onHighwayQuery,
   highwayLoading,
   waypoints: externalWaypoints,
   onWaypointsChange,
 }: RoutePlannerProps) {
-  const [selectedPresetId, setSelectedPresetId] = useState<string>('');
   const [highwayRef, setHighwayRef] = useState('');
   const [localWaypoints, setLocalWaypoints] = useState<Waypoint[]>([]);
 
   const waypoints = externalWaypoints ?? localWaypoints;
   const setWaypoints = onWaypointsChange ?? setLocalWaypoints;
-
-  const handlePresetConfirm = () => {
-    const preset = PRESET_ROUTES.find((r) => r.id === selectedPresetId);
-    if (preset) {
-      onPresetSelect(preset);
-    }
-  };
 
   const handleHighwaySubmit = () => {
     const trimmed = highwayRef.trim().toUpperCase();

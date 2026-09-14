@@ -4,10 +4,9 @@ import Sidebar from './components/Sidebar/Sidebar';
 import VideoExportModal from './components/VideoExportModal';
 import { useTripStore } from './store/trip-store';
 import { useAnimation } from './hooks/useAnimation';
-import { planRoute, planRouteSegmented, type DrivingPolicy, type RoadType } from './lib/driving';
+import { planRoute, type DrivingPolicy, type RoadType } from './lib/driving';
 import { computeWaypoints, snapToPath, findClosestPathIndex, calcPathDistance } from '@road-trip/shared';
 import { queryHighway, type HighwayRoute } from '@road-trip/shared';
-import type { PresetRoute } from '@road-trip/shared';
 import type { Trip } from '@road-trip/shared';
 
 function generateId(): string {
@@ -19,7 +18,8 @@ function reverseGeocode(loc: [number, number]): Promise<string> {
     const geocoder = new AMap.Geocoder();
     geocoder.getAddress(loc, (status: string, result: Record<string, unknown>) => {
       if (status === 'complete' && result.regeocode) {
-        resolve(result.regeocode.formattedAddress as string);
+        const regeocode = result.regeocode as Record<string, unknown>;
+        resolve(regeocode.formattedAddress as string);
       } else {
         resolve(`${loc[1].toFixed(4)}, ${loc[0].toFixed(4)}`);
       }
@@ -247,7 +247,12 @@ export default function App() {
         }
 
         const totalDist = calcPathDistance(fullPath);
-        const updatedRoute = { ...trip!.route, path: fullPath, distance: totalDist };
+        const updatedRoute = { 
+          path: fullPath, 
+          distance: totalDist,
+          time: trip!.route?.time ?? 0,
+          steps: trip!.route?.steps ?? [],
+        };
         if (currentId) {
           await updateTrip(currentId, {
             waypoints: newWaypoints.map((loc) => ({ name: '', loc })),
@@ -317,44 +322,6 @@ export default function App() {
     [origin, trip, waypoints, rePlanRoute]
   );
 
-  const handlePresetSelect = useCallback(
-    async (preset: PresetRoute) => {
-      const o = preset.origin.loc;
-      const d = preset.dest.loc;
-      const wps = preset.waypoints.map((w) => w.loc);
-      setOrigin(o);
-      setDest(d);
-      setOriginName(preset.origin.name);
-      setDestName(preset.dest.name);
-      setWaypoints(wps);
-      setPlanning(true);
-      setError(null);
-      try {
-        const route = await planRouteSegmented(o, d, wps, 3, 'national');
-        const newTrip: Trip = {
-          id: generateId(),
-          name: `${preset.name} ${preset.description}`,
-          mode: 'planned',
-          createdAt: Date.now(),
-          origin: { name: preset.origin.name, loc: o },
-          dest: { name: preset.dest.name, loc: d },
-          waypoints: wps.map((loc) => ({ name: '', loc })),
-          policy,
-          route,
-          distance: route.distance,
-          duration: route.time,
-        };
-        const computed = computeWaypoints(route.path);
-        setWaypoints(computed);
-        await addTrip(newTrip);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : '路线规划失败');
-      } finally {
-        setPlanning(false);
-      }
-    },
-    [policy, roadType, addTrip]
-  );
 
   const handlePolicyChange = useCallback((newPolicy: DrivingPolicy) => {
     setPolicy(newPolicy);
@@ -470,7 +437,6 @@ export default function App() {
         onRoadTypeChange={handleRoadTypeChange}
         onOriginSelect={handleOriginSelect}
         onDestSelect={handleDestSelect}
-        onPresetSelect={handlePresetSelect}
         onHighwayQuery={handleHighwayQuery}
         highwayLoading={highwayLoading}
         highwayRoute={highwayRoute}

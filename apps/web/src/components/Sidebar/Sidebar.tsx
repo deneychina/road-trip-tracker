@@ -3,7 +3,6 @@ import AnimationControls from './AnimationControls';
 import TripList from './TripList';
 import type { Trip } from '@road-trip/shared';
 import type { DrivingPolicy, RoadType } from '../../lib/driving';
-import type { PresetRoute } from '@road-trip/shared';
 import type { HighwayRoute } from '@road-trip/shared';
 
 interface Waypoint {
@@ -25,7 +24,6 @@ interface SidebarProps {
   onRoadTypeChange: (roadType: RoadType) => void;
   onOriginSelect: (name: string, loc: [number, number]) => void;
   onDestSelect: (name: string, loc: [number, number]) => void;
-  onPresetSelect: (route: PresetRoute) => void;
   onHighwayQuery: (ref: string) => void;
   highwayLoading: boolean;
   highwayRoute: HighwayRoute | null;
@@ -66,7 +64,6 @@ export default function Sidebar({
   onRoadTypeChange,
   onOriginSelect,
   onDestSelect,
-  onPresetSelect,
   onHighwayQuery,
   highwayLoading,
   highwayRoute,
@@ -102,7 +99,6 @@ export default function Sidebar({
         onRoadTypeChange={onRoadTypeChange}
         onOriginSelect={onOriginSelect}
         onDestSelect={onDestSelect}
-        onPresetSelect={onPresetSelect}
         onHighwayQuery={onHighwayQuery}
         highwayLoading={highwayLoading}
         waypoints={plannerWaypoints}

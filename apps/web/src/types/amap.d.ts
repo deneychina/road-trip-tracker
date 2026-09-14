@@ -17,6 +17,7 @@ declare namespace AMap {
     getCenter(): LngLat;
     plugin(plugins: string | string[], callback: () => void): void;
     destroy(): void;
+    lngLatToContainer(lnglat: [number, number]): Pixel;
   }
 
   class Marker {
@@ -97,6 +98,10 @@ declare namespace AMap {
     constructor(opts?: Record<string, unknown>);
     getAddress(
       location: [number, number] | [number, number][],
+      callback: (status: string, result: Record<string, unknown>) => void
+    ): void;
+    getLocation(
+      address: string,
       callback: (status: string, result: Record<string, unknown>) => void
     ): void;
   }

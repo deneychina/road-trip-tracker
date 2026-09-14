@@ -244,7 +244,7 @@ export default function MapView({
     const handleRightClick = (e: any) => {
       const lnglat = e.lnglat as AMap.LngLat;
       if (!lnglat) return;
-      const pixel = map.lngLatToContainer(lnglat);
+      const pixel = map.lngLatToContainer([lnglat.getLng(), lnglat.getLat()]);
       setContextMenu({
         x: pixel.getX(),
         y: pixel.getY(),

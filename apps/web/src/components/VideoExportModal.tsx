@@ -32,27 +32,7 @@ function calcBearing(from: [number, number], to: [number, number]): number {
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 }
 
-function haversine(a: [number, number], b: [number, number]): number {
-  const R = 6371000;
-  const dLat = ((b[1] - a[1]) * Math.PI) / 180;
-  const dLng = ((b[0] - a[0]) * Math.PI) / 180;
-  const lat1 = (a[1] * Math.PI) / 180;
-  const lat2 = (b[1] * Math.PI) / 180;
-  const x =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-}
-
-function calcPathDistanceKm(path: [number, number][]): number {
-  let total = 0;
-  for (let i = 1; i < path.length; i++) {
-    total += haversine(path[i - 1], path[i]);
-  }
-  return total / 1000;
-}
-
-function calcDurationFromSpeed(path: [number, number][], speedKmh: number): number {
+function calcDurationFromSpeed(_path: [number, number][], speedKmh: number): number {
   const minSpeed = 10;
   const maxSpeed = 120;
   const minDuration = 5;
@@ -140,7 +120,7 @@ export default function VideoExportModal({ route, tripName, onClose }: VideoExpo
         ]);
 
         const data = await ffmpeg.readFile('output.mp4');
-        const blob = new Blob([data as Uint8Array], { type: 'video/mp4' });
+        const blob = new Blob([(data as Uint8Array).buffer as ArrayBuffer], { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -355,7 +335,11 @@ export default function VideoExportModal({ route, tripName, onClose }: VideoExpo
   const handleClose = useCallback(() => {
     cleanup();
     if (ffmpegRef.current) {
-      ffmpegRef.current.terminate().catch(() => {});
+      try {
+        ffmpegRef.current.terminate();
+      } catch {
+        // ignore termination errors
+      }
     }
     onClose();
   }, [cleanup, onClose]);

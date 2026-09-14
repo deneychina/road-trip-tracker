@@ -1,6 +1,7 @@
 {
   "name": "road-trip-tracker-monorepo",
   "private": true,
+  "packageManager": "npm@11.17.0",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
     "dev": "turbo run dev",
