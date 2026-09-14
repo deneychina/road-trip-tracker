@@ -50,6 +50,14 @@ jobs:
         run: npx cap sync android
         working-directory: apps/web
 
+      - name: Generate Keystore
+        run: |
+          keytool -genkeypair -v -storetype PKCS12 -keystore release-keystore.p12 -alias roadtrip -keyalg RSA -keysize 2048 -validity 10000 -storepass roadtrip123 -keypass roadtrip123 -dname "CN=Road Trip Tracker, OU=Dev, O=RoadTrip, L=City, ST=State, C=US"
+          echo "KEYSTORE_PATH=$PWD/release-keystore.p12" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=roadtrip123" >> $GITHUB_ENV
+          echo "KEY_ALIAS=roadtrip" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=roadtrip123" >> $GITHUB_ENV
+
       - name: Build APK
         run: |
           cd apps/web/android
@@ -60,4 +68,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: road-trip-tracker-apk
-          path: apps/web/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: apps/web/android/app/build/outputs/apk/release/app-release.apk
